@@ -1,0 +1,95 @@
+from collections import Optional
+from memory.unsafe_pointer import UnsafePointer
+from memory.arc import ArcPointer
+from testing import assert_true
+
+
+trait NType(
+    CollectionElement,
+    ComparableCollectionElement,
+    RepresentableCollectionElement,
+    Writable,
+):
+    pass
+
+
+@value
+struct Node[T: NType]:
+    var value: Optional[T]
+    var next: ArcPointer[Optional[Self]]
+    var prev: ArcPointer[Optional[Self]]
+
+    fn __init__(out self):
+        self.value = Optional[T]()
+        self.next = ArcPointer(Optional[Self]())
+        self.prev = ArcPointer(Optional[Self]())
+
+    fn __init__(out self, value: T):
+        self = Self()
+        self.value = Optional(value)
+
+    fn __init__(out self, value: T, next_node: Self, prev_node: Self):
+        self = Self()
+        self.value = Optional(value)
+        self.append(next_node)
+        self.prepend(prev_node)
+
+    fn __getitem__(self) -> T:
+        return self.value.value()
+
+    fn get_next(self) -> Self:
+        return self.next[].value()
+
+    fn get_prev(self) -> Self:
+        return self.prev[].value()
+
+    fn next_value(self) -> T:
+        if self.next[]:
+            return self.next[].value()[]
+        else:
+            return Optional[T]("Null").value()
+
+    fn prev_value(self) -> T:
+        if self.prev[]:
+            return self.prev[].value()[]
+        else:
+            return Optional[T]("Null").value()
+
+    fn append(mut self, next_node: Self):
+        var ptr = ArcPointer(Optional(next_node))
+        self.next = ptr
+
+    fn prepend(mut self, prev_node: Self):
+        var ptr = ArcPointer(Optional(prev_node))
+        self.prev = ptr
+
+
+@value
+struct LinkedList[T: NType]:
+    var head: Optional[Node[T]]
+    var tail: Optional[Node[T]]
+    var size: Int32
+
+    fn __init__(out self):
+        self.head = Optional[Node[T]]()
+        self.tail = Optional[Node[T]]()
+        self.size = 0
+    
+    fn __init__(out self, head: Node[T], tail: Node[T]):
+        self = Self()
+        self.head = Optional(head)
+        self.tail = Optional(tail)
+        self.size = 2
+    
+    fn append(mut self, node: Node[T]):
+        if not self.head:
+            self.head = Optional(node)
+            self.tail = Optional(node)
+            self.size += 1
+        else:
+            var node = self.head.value()
+            var count: Int32 = 0
+            while count <= self.size:
+                node = node.get_next()
+                count += 1
+            
