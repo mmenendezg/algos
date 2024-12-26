@@ -6,8 +6,6 @@ name = "algos"
 platforms = ["osx-arm64"]
 version = "0.1.0"
 
-[tasks]
-
 [dependencies]
 max = ">=24.6.0,<25"
 
@@ -15,3 +13,8 @@ max = ">=24.6.0,<25"
 ipykernel = ">=6.29.5, <7"
 ruff = ">=0.8.3, <0.9"
 icecream = ">=2.1.3, <3"
+ipywidgets = ">=8.1.5, <9"
+pygame = ">=2.6.1, <3"
+
+[tasks]
+life = "mojo learning-mojo/life.🔥"
