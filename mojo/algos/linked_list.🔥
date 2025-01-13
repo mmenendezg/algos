@@ -9,12 +9,13 @@ trait NType(
     ComparableCollectionElement,
     RepresentableCollectionElement,
     Writable,
+    Stringable,
 ):
     pass
 
 
 @value
-struct Node[T: NType]:
+struct Node[T: NType](Writable):
     var value: Optional[T]
     var next: ArcPointer[Optional[Self]]
     var prev: ArcPointer[Optional[Self]]
@@ -34,26 +35,22 @@ struct Node[T: NType]:
         self.append(next_node)
         self.prepend(prev_node)
 
+    fn __setitem__(mut self, value: T):
+        self.value = Optional(value)
+
     fn __getitem__(self) -> T:
-        return self.value.value()
-
-    fn get_next(self) -> Self:
-        return self.next[].value()
-
-    fn get_prev(self) -> Self:
-        return self.prev[].value()
-
-    fn next_value(self) -> T:
-        if self.next[]:
-            return self.next[].value()[]
+        if not self.value:
+            return Optional[T]().value()
         else:
-            return Optional[T]("Null").value()
+            return self.value.value()
 
-    fn prev_value(self) -> T:
-        if self.prev[]:
-            return self.prev[].value()[]
+    fn __getitem__(self, node: String) -> Self:
+        if node == "next":
+            return self.next[].value()
+        elif node == "prev":
+            return self.prev[].value()
         else:
-            return Optional[T]("Null").value()
+            return Self()
 
     fn append(mut self, next_node: Self):
         var ptr = ArcPointer(Optional(next_node))
@@ -62,6 +59,23 @@ struct Node[T: NType]:
     fn prepend(mut self, prev_node: Self):
         var ptr = ArcPointer(Optional(prev_node))
         self.prev = ptr
+
+    fn write_to[W: Writer](self, mut writer: W):
+        try:
+            var value = self.value.value().__str__()
+            var output = String("")
+            output += "value: {0}\n".format(value)
+            if self.prev[]:
+                output += "\tprev: {0}\n".format(
+                    self.prev[].value()[].__str__()
+                )
+            if self.next[]:
+                output += "\tnext: {0}\n".format(
+                    self.next[].value()[].__str__()
+                )
+            writer.write(output)
+        except:
+            writer.write("value: N/A")
 
 
 @value
@@ -74,22 +88,3 @@ struct LinkedList[T: NType]:
         self.head = Optional[Node[T]]()
         self.tail = Optional[Node[T]]()
         self.size = 0
-    
-    fn __init__(out self, head: Node[T], tail: Node[T]):
-        self = Self()
-        self.head = Optional(head)
-        self.tail = Optional(tail)
-        self.size = 2
-    
-    fn append(mut self, node: Node[T]):
-        if not self.head:
-            self.head = Optional(node)
-            self.tail = Optional(node)
-            self.size += 1
-        else:
-            var node = self.head.value()
-            var count: Int32 = 0
-            while count <= self.size:
-                node = node.get_next()
-                count += 1
-            
